@@ -2,9 +2,12 @@ import { useContext, useEffect, useState } from 'react';
 import { VStack, Text, HStack, useTheme, ScrollView, Box } from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-import { CircleWavyCheck, Hourglass, DesktopTower, ClipboardText, User, Desktop, UsersFour, NavigationArrow, Broadcast, QrCode, Buildings, Timer } from 'phosphor-react-native'
+import { CircleWavyCheck, Hourglass, DesktopTower, ClipboardText, User, Desktop, UsersFour, NavigationArrow, Broadcast, QrCode, Buildings, Timer, Check } from 'phosphor-react-native'
+import { Select as NativeBaseSelect, ISelectProps } from 'native-base';
+
 
 import { Input } from '../components/Input';
+import { Select } from '../components/Select';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { OrderProps } from '../components/Order';
@@ -19,41 +22,53 @@ type RouteParams = {
 }
 
 type OrderDetails = OrderProps & {
+    user: {
+        name: string
+    },
     name_product: string;
     department: string;
     location: 'Remoto' | 'Presencial';
     address_access: string;
     description: string;
-    solution: string;
     closed: string;
+    name_admin: string;
+    sla: string;
+    success: 'Sucesso' | 'Falha';
+    solution: string;
 }
 
 export function Details() {
     const { user } = useContext(AuthContext)
 
+    const [adminName, SetAdminName] = useState('');
+    const [sla, setSla] = useState('');
+    const [success, setSuccess] = useState('');
     const [solution, setSolution] = useState('');
+
+
     const [isLoading, setIsLoading] = useState(true);
     const [order, setOrder] = useState<OrderDetails>({} as OrderDetails);
 
     const { colors } = useTheme();
 
     const navigation = useNavigation()
+
     const route = useRoute()
     const { orderId } = route.params as RouteParams;
 
     async function handleOrderClose() {
-        if (!solution) {
-            return Alert.alert('Solicitação', "Informa a solução para encerrar a solicitação");
+        if (!solution && !adminName && !sla && !success) {
+            return Alert.alert('Solicitação', "Informe os dados para encerrar a solicitação");
         }
 
-        var year = new Date().getFullYear(); //To get the Current Year
-        var month = new Date().getMonth() + 1; //To get the Current Month
-        var date = new Date().getDate(); //To get the Current Date
-        var hours = new Date().getHours(); //To get the Current Hours
-        var min = new Date().getMinutes(); //To get the Current Minutes
-        var sec = new Date().getSeconds(); //To get the Current Seconds
+        const data = {
+            adminName,
+            sla,
+            success,
+            solution
+        }
 
-        let dateFormat = [year, month, date].join("-")
+        console.log(data)
 
         // await fetch(`http://192.168.1.11:3333/order/update/${orderId}`, {
         //     method: 'POST',
@@ -82,7 +97,8 @@ export function Details() {
             api.get(`/order/${orderId}`)
                 .then(res => {
                     if (res.status === 200) {
-                        console.log(res.data)
+                        // console.log(res.data)
+                        // console.log('___________________________________________________________')
                         setOrder(res.data)
                     } else {
                         return Alert.alert("Ordem", "Não foi possível localizar essa ordem!")
@@ -127,6 +143,13 @@ export function Details() {
             </HStack>
 
             <ScrollView mx={5} showsVerticalScrollIndicator={false}>
+
+                <CardDetails
+                    title="usaurio"
+                    description={`Solicitante: ${order.user.name}`}
+                    icon={User}
+                />
+
                 <CardDetails
                     title="nome"
                     description={`Produto: ${order.name_product}`}
@@ -169,29 +192,63 @@ export function Details() {
                 />
 
                 <HStack bg="gray.500" justifyContent="center" p={5} mt={8} borderColor={colors.white}>
-                    
+
                     <Text
                         fontSize="md"
                         color={colors.white}
                         ml={2}
                         textTransform="uppercase"
                     >
-                        Finalizar Chamado
+                        {user.isAdmin ? 'Finalizar Chamado' : 'Conclusão'}
                     </Text>
                 </HStack>
 
                 <CardDetails
                     title='realizado'
-                    description={`Por: ${user.name}`}
                     icon={User}
-                />
+                    description={order.name_admin == null ? '' : `Por: ${order.name_admin}`}
+                >
+                    {
+                        order.status === 'open' && user.isAdmin &&
+                        <Input
+                            placeholder='Feito por: :'
+                            onChangeText={SetAdminName}
+                            textAlignVertical="top"
+                        />
+                    }
+                </CardDetails>
+
 
                 <CardDetails
-                    title='sla'
-                    description={`Tempo de conclusão:`}
+                    title="sla"
                     icon={Timer}
-                />
+                    description={order.sla}
+                >
+                    {
+                        order.status === 'open' &&
+                        <Input
+                            placeholder='Tempo de conclusão:'
+                            onChangeText={setSla}
+                            textAlignVertical="top"
+                        />
+                    }
 
+                </CardDetails>
+
+                <CardDetails
+                    title="Resultado"
+                    icon={Check}
+                >
+                    <Select
+                        accessibilityLabel="Resultado"
+                        placeholder="Resultado do chamado"
+                        selectedValue={success}
+                        onValueChange={itemValue => setSuccess(itemValue)}
+                    >
+                        <NativeBaseSelect.Item label="Sucesso" value="Sucesso" />
+                        <NativeBaseSelect.Item label="Falha" value="Falha" />
+                    </Select>
+                </CardDetails>
 
                 <CardDetails
                     title="solução"
