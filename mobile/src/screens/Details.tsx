@@ -48,6 +48,7 @@ export function Details() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [order, setOrder] = useState<OrderDetails>({} as OrderDetails);
+    const [nameSolicit, setNameSolicit] = useState('');
 
     const { colors } = useTheme();
 
@@ -61,45 +62,39 @@ export function Details() {
             return Alert.alert('Solicitação', "Informe os dados para encerrar a solicitação");
         }
 
-        const data = {
-            adminName,
-            sla,
-            success,
-            solution
+        try {
+            api.put(`/order/update/${orderId}`, {
+                adminName,
+                sla,
+                success,
+                solution
+            })
+                .then(res => {
+                    if (res.status === 201) {
+                        console.log(res)
+                        Alert.alert("Solicitação", "solicitação encerrada.");
+                        navigation.goBack();
+                    } else {
+                        return Alert.alert("Ordem", "Não foi possível localizar essa ordem!")
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    Alert.alert('Solicitação', "Não foi possível encerrar a solicitação")
+                });
+        } catch {
+            return Alert.alert("Error", "Não foi possível realizar a requisição")
         }
-
-        console.log(data)
-
-        // await fetch(`http://192.168.1.11:3333/order/update/${orderId}`, {
-        //     method: 'POST',
-        //     body: JSON.stringify({
-        //         status: 'closed',
-        //         solution: solution,
-        //         closed_at: new Date()
-        //     }),
-        //     headers: {
-        //         'Content-type': 'application/json; charset=UTF-8',
-        //     },
-        // })
-        //     .then(() => {
-        //         Alert.alert("Solicitação", "solicitação encerrada.");
-        //         navigation.goBack();
-        //     })
-        //     .catch((error) => {
-        //         console.log(error);
-        //         Alert.alert('Solicitação', "Não foi possível encerrar a solicitação")
-        //     })
     }
 
     useEffect(() => {
-
         try {
             api.get(`/order/${orderId}`)
                 .then(res => {
                     if (res.status === 200) {
                         // console.log(res.data)
-                        // console.log('___________________________________________________________')
                         setOrder(res.data)
+                        setNameSolicit(res.data.user.name)
                     } else {
                         return Alert.alert("Ordem", "Não foi possível localizar essa ordem!")
                     }
@@ -113,6 +108,7 @@ export function Details() {
         }
 
         setIsLoading(false);
+        console.log(order)
     }, [])
 
     if (isLoading) {
@@ -146,7 +142,7 @@ export function Details() {
 
                 <CardDetails
                     title="usaurio"
-                    description={`Solicitante: ${order.user.name}`}
+                    description={`Solicitante: ${nameSolicit}`}
                     icon={User}
                 />
 
@@ -225,7 +221,7 @@ export function Details() {
                     description={order.sla}
                 >
                     {
-                        order.status === 'open' &&
+                        order.status === 'open' && user.isAdmin &&
                         <Input
                             placeholder='Tempo de conclusão:'
                             onChangeText={setSla}
@@ -235,20 +231,42 @@ export function Details() {
 
                 </CardDetails>
 
-                <CardDetails
-                    title="Resultado"
-                    icon={Check}
-                >
-                    <Select
-                        accessibilityLabel="Resultado"
-                        placeholder="Resultado do chamado"
-                        selectedValue={success}
-                        onValueChange={itemValue => setSuccess(itemValue)}
+                {
+                    order.status === 'open' && user.isAdmin &&
+                    <CardDetails
+                        title="Resultado"
+                        icon={Check}
                     >
-                        <NativeBaseSelect.Item label="Sucesso" value="Sucesso" />
-                        <NativeBaseSelect.Item label="Falha" value="Falha" />
-                    </Select>
-                </CardDetails>
+                        <Select
+                            accessibilityLabel="Resultado"
+                            placeholder="Resultado do chamado"
+                            selectedValue={success}
+                            onValueChange={itemValue => setSuccess(itemValue)}
+                        >
+                            <NativeBaseSelect.Item label="Sucesso" value="Sucesso" />
+                            <NativeBaseSelect.Item label="Falha" value="Falha" />
+                        </Select>
+                    </CardDetails>
+                }
+
+                {
+                    order.status === 'open' && !user.isAdmin &&
+                    <CardDetails
+                        title="resultado"
+                        description={order.success}
+                        icon={Check}
+                    />
+                }
+
+                {
+                    order.status === 'closed' &&
+                    <CardDetails
+                        title="resultado"
+                        description={order.success}
+                        icon={Check}
+                    />
+                }
+
 
                 <CardDetails
                     title="solução"
@@ -262,7 +280,7 @@ export function Details() {
                 // Condicional => se foi encerrado ira mostrar o texto, como o ternario porem sem o :
                 >
                     {
-                        order.status === 'open' &&
+                        order.status === 'open' && user.isAdmin &&
                         <Input
                             placeholder='Descrição da solução'
                             onChangeText={setSolution}
