@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Conclusion } from "./Conclusion";
 
 import { User } from "./Users";
 
@@ -35,6 +36,18 @@ class Order {
 
     @Column()
     status: string;
+
+    @Column()
+    name_admin: string;
+
+    @Column()
+    sla: string;
+
+    @Column()
+    success: string;
+
+    @Column()
+    solution: string;
 
     @CreateDateColumn()
     created_at: Date;

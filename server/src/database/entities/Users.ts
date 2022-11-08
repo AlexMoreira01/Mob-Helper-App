@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Conclusion } from "./Conclusion";
+import { Order } from "./Orders";
 
 @Entity("users")
 class User {
@@ -22,6 +24,12 @@ class User {
 
     @Column()
     isLogged: boolean;
+
+    @OneToMany((type) => Order, (orders) => orders.user_id)
+    order: Order 
+
+    @OneToMany((type) => Conclusion, (conclusion) => conclusion.admin_id)
+    conclusion: Conclusion 
 
     @CreateDateColumn()
     created_at: Date;

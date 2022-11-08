@@ -18,9 +18,11 @@ app.use(cors())
 
 import { User } from "./database/entities/Users";
 import { Order } from "./database/entities/Orders";
+import { Conclusion } from "./database/entities/Conclusion";
 
 const usersRepository = AppDataSource.getRepository(User)
 const ordersRepository = AppDataSource.getRepository(Order)
+const conclusionRepository = AppDataSource.getRepository(Conclusion)
 
 // Login
 app.post('/login', async (request, response) => {
@@ -199,7 +201,13 @@ app.post('/orders/:type', async (request, response) => {
 
     const user = await usersRepository
         .createQueryBuilder("user")
-        .select(["user.id", "user.name", "user.email", "user.industry_code", "user.isAdmin"])
+        .select([
+            "user.id",
+            "user.name",
+            "user.email",
+            "user.industry_code",
+            "user.isAdmin"
+        ])
         .where("user.id = :userId")
         .setParameters({ userId })
         .getOne()
@@ -254,10 +262,10 @@ app.get('/order/:id', async (request, response) => {
 
     const order = await ordersRepository
         .createQueryBuilder("order")
+        .innerJoin("order.user", "user")
         .select([
             "order.id",
             "order.user_id",
-            "user.name",
             "order.name_product",
             "order.patrimony",
             "order.department",
@@ -265,17 +273,22 @@ app.get('/order/:id', async (request, response) => {
             "order.address_access",
             "order.description",
             "order.status",
-            "order.created_at"
+            "order.created_at",
+
+            "order.name_admin",
+            "order.sla",
+            "order.solution",
+            "order.success",
+            "order.updated_at",
+
+            "user.name",
         ])
-        .innerJoin("order.user_id", "user")
         .where("order.id = :idOrder")
         .setParameters({ idOrder })
         .getOne()
 
     return response.json(order);
-
 })
-
 
 
 // app.post('/order/update/:id', async (request, response) => {
