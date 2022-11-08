@@ -290,23 +290,28 @@ app.get('/order/:id', async (request, response) => {
     return response.json(order);
 })
 
+app.put('/order/update/:id', async (request, response) => {
+    const orderId = request.params.id;
+    const { adminName, sla, success, solution } = request.body;
 
-// app.post('/order/update/:id', async (request, response) => {
-//     const orderId = request.params.id;
-//     const body: any = request.body;
+    const id = Number(orderId);
 
-//     const order = await prisma.order.update({
-//         where: {
-//             id: orderId
-//         },
-//         data: {
-//             status: body.status,
-//             solution: body.solution,
-//             closed_at: body.closed_at,
-//         }
-//     })
+    const update = await ordersRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+            status: 'closed',
+            name_admin: adminName,
+            sla,
+            success,
+            solution,
+        })
+        .where("id = :id")
+        .setParameters({ id })
+        .execute();
 
-//     return response.status(201).json();
-// })
+    return response.status(201).json();
+})
+
 
 export { app };
