@@ -12,14 +12,11 @@ import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 
 import AuthContext from "../contexts/auth";
-import { useNavigation } from "@react-navigation/native";
 
 
 
-export function SignIn() {
+export function SignUp() {
     const { signed, user, signIn } = useContext(AuthContext);
-
-    const navigation = useNavigation();
 
     // Variavel comum nao gera uma nova renderização, somente os estados -- estado reflete na interface
     // Variavel comum para calculos ou outras coisas
@@ -44,8 +41,8 @@ export function SignIn() {
         signIn(email, password, setIsLoadingFalse);
     }
 
-    async function handleSignUp(){
-        // navigation.navigate('SignUp');
+    async function handleSignUp() {
+
     }
 
 
@@ -62,6 +59,13 @@ export function SignIn() {
 
             {/* Utilizando o mesmo componente com configurações diferentes */}
             <Input
+                placeholder="Nome"
+                mb={4}
+                InputLeftElement={<Icon as={<Envelope color={colors.gray[300]} />} ml={4} />}
+                onChangeText={setEmail}
+            />
+
+            <Input
                 placeholder="E-mail"
                 mb={4}
                 InputLeftElement={<Icon as={<Envelope color={colors.gray[300]} />} ml={4} />}
@@ -69,27 +73,28 @@ export function SignIn() {
             />
 
             <Input
-                mb={8}
+                mb={4}
                 placeholder="Senha"
                 InputLeftElement={<Icon as={<Key color={colors.gray[300]} />} ml={4} />}
                 secureTextEntry
                 onChangeText={setPassword}
             />
 
+            <Input
+                mb={8}
+                placeholder="Confirmar Senha"
+                InputLeftElement={<Icon as={<Key color={colors.gray[300]} />} ml={4} />}
+                secureTextEntry
+                onChangeText={setPassword}
+            />
+
             <Button
-                title="Entrar"
+                title="Cadastrar"
                 w="full"
                 onPress={handleSignIn}
             />
 
-            
 
-            {/* <Button
-                title="Cadastre-se"
-                w="full"
-                mt={7}
-                onPress={handleSignUp}
-            /> */}
 
 
         </VStack>
