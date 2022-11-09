@@ -313,5 +313,15 @@ app.put('/order/update/:id', async (request, response) => {
     return response.status(201).json();
 })
 
+app.delete('/order/:id', async (request, response) => {
+    const id = Number(request.params.id);
+
+    const orderRemove = await ordersRepository.findOneBy({ id })
+
+    await ordersRepository.remove(orderRemove)
+
+    return response.status(200).json();
+})
+
 
 export { app };
