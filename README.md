@@ -55,6 +55,7 @@ Com a aplicação utilizando chamadas http para se comunicar com o server e admi
 
 ## Getting Started
 
+
 - Instalar dependências - Executar na pasta web e server - yarn ou npm
 ```sh
 yarn ou npm
